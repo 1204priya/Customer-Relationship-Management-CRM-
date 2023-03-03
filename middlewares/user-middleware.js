@@ -1,4 +1,5 @@
 const User = require("../models/user-model");
+const jwt = require('jsonwebtoken')
 
 
 exports.signupMw = async(req,res,next) => {
@@ -13,7 +14,7 @@ exports.signupMw = async(req,res,next) => {
             return res.status(400).send(`failed ! invalid email id`);
         }
 
-         user = await User.findOne({email : req.body.email,userId:req.body.userId});
+         user = await User.findOne({email : req.body.email});
 
         if(user !== null){
             return res.status(400).send(`Email is already registered`);
@@ -24,8 +25,7 @@ exports.signupMw = async(req,res,next) => {
          return res.status(400).send(`Name is not provided`);
            }
 
-           //userId validations
-           //checking if userId is unique or not
+           //userId validations and checking if userId is unique or not
 
            user = await User.findOne({userId : req.body.userId});
 
@@ -57,7 +57,7 @@ exports.signupMw = async(req,res,next) => {
            }  
          
           if(req.body.userType === "ADMIN" ){
-           return res.status(400).send(`User Can Only Signup For ENGINEER | CUSTOMER`);
+           return res.status(400).send(`userType is incorrect!. user Can Only Signup For ENGINEER | CUSTOMER`);
           }
 
           // password validations  
@@ -97,3 +97,116 @@ exports.signinMw = async(req,res,next) => {
     res.status(500).send(`error in signinMw ${err}`);
 }
 }
+ 
+
+  exports.verifyJwtToken = async (req,res,next)=>{
+    try{
+          const token = req.headers["x-access-token"];
+          //const user = await User.findOne({userId:"admin"})
+       
+        /**
+         * check if the token is present
+         */
+        if(!token){
+            return res.status(403).send({
+                message:"token is not provided"
+            })
+        }
+        
+        /**
+         * go and validate the token
+         */
+
+         jwt.verify(token , process.env.secret , (err,decoded)=>{
+            if(err){
+                return res.status(401).send({
+                    message:"Unauthorized ! Access is prohibited"
+                })
+            }
+
+            req.email = decoded.id
+
+            // if(req.email !== user.email){
+            //  return res.status(401).send({
+            //     message:"only admin user has permission"
+            //  })
+            // }
+            next()
+        })
+           
+    }catch(err){
+        console.log("error in verifying jwt token in  middleware ",err);
+        res.status(500).send({message:"internal server error"})
+    }
+  } 
+
+
+  exports.isAdmin = async (req,res,next)=>{
+    try{
+        const user = await User.findOne({email:req.email});
+        if(user && user.userType == "ADMIN"){
+            next()
+        }
+        else{
+            return res.status(403).send({
+                message:"only admin can perforn this action"
+               })
+        }
+        
+
+    }catch(err){
+        console.log("error in isAdmin middleware",err);
+        res.status(500).send({message:"internal server error"})
+    }
+  }
+
+
+  exports.isValidUserIdInReqParam = async(req,res,next)=>{
+    try{
+        //first check if the userId is valid in the req param
+        const user = await User.findOne({userId:req.params.userId})
+
+        if(!user){
+            return res.status(400).send({
+                message:"userId not found"
+            })
+        } 
+    next();
+    }catch(err){
+        console.log("error in isValidUserid middleware",err.message);
+        res.status(500).send({
+            message:"internal server error"
+        })
+    }
+  }
+     
+exports.isAdminOrOwner = async (req,res,next)=>{
+    try{
+        //Either the caller should be the admin or the owner of that userId
+        
+        const callingUser = await User.findOne({email:req.email});
+        if(callingUser.userType == "ADMIN" || callingUser.userId == req.params.id){
+            next();
+        }
+        else{
+            return res.status(403).send({
+                message:"only admin is allowed to  make this call "
+            })
+        }
+        
+    }catch(err){
+        console.log("error in isAdminOrOwner middleware",err.message);
+        res.status(500).send({
+            message:"internal server error"
+        })
+    }
+}
+
+
+
+
+
+
+
+
+

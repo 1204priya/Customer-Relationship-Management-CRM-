@@ -6,7 +6,7 @@ const { PORT } = require("./configs/server-config");
 const mongoose = require('mongoose');
 const User = require("./models/user-model");
 
-
+const bcrypt = require('bcryptjs')
 
 const app = express();
 app.use(express.json({urlencoded : {extended : true}}));
@@ -23,7 +23,7 @@ db.once('open', () => {
     console.log(`connected to mongodb successfully`);
     init();
 })
-
+ 
 
 const init = async() =>{
     try{
@@ -40,11 +40,11 @@ const init = async() =>{
       userId:"admin", 
       name : "Priyanka", 
       email : "str.priyanka@gmail.com",
-      password : process.env.adminpass,  
+      password : bcrypt.hashSync("Priyanka@1",8),  
       userType : "ADMIN" 
      });
-     
-     console.log(`Admin has been created ${admin}`);  
+      
+     console.log(`Admin has been created ${admin}`);   
  }}catch(err){ 
     console.log("error",err);  
 

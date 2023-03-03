@@ -2,7 +2,6 @@ const User = require('../models/user-model');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const {showData} = require('../utils/data-map')
-
 const {produce} =require('../utils/kafka')
 
 const redis = require('redis');
@@ -43,13 +42,13 @@ exports.signup = async(req,res) => {
 
     
      let data = showData(userCreated)
-    arr.push(data);
+    // arr.push(data);
 
-    await client.hSet(key,field,JSON.stringify(arr));
-    console.log(`added new user to redis`);
+    // await client.hSet(key,field,JSON.stringify(arr));
+    // console.log(`added new user to redis`);
      
     let msg = "new user added"
-    produce(userCreated , msg)
+    produce(userCreated , msg) 
     res.status(201).send(data);  
 
     }catch(err){
@@ -66,6 +65,11 @@ exports.signin = async(req,res) => {
 
     if(user === null){
         return res.status(400).send(`user is not registered`);
+    }
+
+    //check if the user status is in pending state
+    if(user.userStatus=="PENDING"){
+        return res.status(400).send(`not yet approved from the admin`);
     }
     const validPass = bcrypt.compareSync(req.body.password,user.password);
 
@@ -85,7 +89,7 @@ exports.signin = async(req,res) => {
         name : user.name,
         email : user.email,
         userType : user.userType,
-        userStatus : user.userStatus,
+        userStatus : user.userStatus, 
         createdAt : user.createdAt,
         updatedAt : user.updatedAt,
         accessToken : token
@@ -100,27 +104,28 @@ exports.signin = async(req,res) => {
 
 exports.findData = async(req,res) => {
     try{
-
-        let nameQ = req.query.name;
+        
+        let userStatusQ = req.query.userStatus;
+        let userTypeQ = req.query.userType
         let user;
         
-        const getRedisData = await client.hGet(key,field);
-        
-        if(getRedisData){
-          user = JSON.parse(getRedisData);
-          console.log(`got data from redis`);
-        }
+        // const getRedisData = await client.hGet(key,field); 
+        // if(getRedisData){
+        //   user = JSON.parse(getRedisData);
+        //   console.log(`got data from redis`);
+        // }
 
-        else if(nameQ){
-            user = await User.find({name : nameQ})
+        if(userStatusQ){
+            user = await User.find({userStatus : userStatusQ})
         }
-
-      else{
+        else if(userTypeQ){
+            user = await User.find({userType : userTypeQ})
+        }
+        else{
         user = await User.find();
-
-    //    arr.push(user);
-    //    await client.hSet(key,field,JSON.stringify(arr));
-    //    console.log(`set cache`);
+        //    arr.push(user);
+        //    await client.hSet(key,field,JSON.stringify(arr));
+        //    console.log(`set cache`);
       }
     
         res.status(200).send(user.map((data) => {
@@ -160,10 +165,11 @@ exports.updateData = async(req,res) => {
         user.name = req.body.name ? req.body.name : user.name;
         user.email = req.body.email ? req.body.email : user.email;
         user.password = req.body.password ? bcrypt.hashSync(req.body.password) : user.password;
-       
+        user.userStatus = req.body.userStatus ? req.body.userStatus : user.userStatus;
+        user.userType = req.body.userType ? req.body.userType : user.userType;
+
         const data = await user.save();
        
-    
         res.status(201).send(showData(data));
 
     }catch(err){
