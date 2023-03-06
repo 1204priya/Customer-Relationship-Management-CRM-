@@ -42,10 +42,10 @@ exports.signup = async(req,res) => {
 
     
      let data = showData(userCreated)
-    // arr.push(data);
+     arr.push(data);
 
-    // await client.hSet(key,field,JSON.stringify(arr));
-    // console.log(`added new user to redis`);
+     await client.hSet(key,field,JSON.stringify(arr));
+     console.log(`added new user to redis`);
      
     let msg = "new user added"
     produce(userCreated , msg) 
@@ -109,11 +109,8 @@ exports.findData = async(req,res) => {
         let userTypeQ = req.query.userType
         let user;
         
-        // const getRedisData = await client.hGet(key,field); 
-        // if(getRedisData){
-        //   user = JSON.parse(getRedisData);
-        //   console.log(`got data from redis`);
-        // }
+         const getRedisData = await client.hGet(key,field); 
+        
 
         if(userStatusQ){
             user = await User.find({userStatus : userStatusQ})
@@ -121,11 +118,13 @@ exports.findData = async(req,res) => {
         else if(userTypeQ){
             user = await User.find({userType : userTypeQ})
         }
+        else if(getRedisData){
+            user = JSON.parse(getRedisData);
+            console.log(`got data from redis`);
+          }
         else{
         user = await User.find();
-        //    arr.push(user);
-        //    await client.hSet(key,field,JSON.stringify(arr));
-        //    console.log(`set cache`);
+        
       }
     
         res.status(200).send(user.map((data) => {

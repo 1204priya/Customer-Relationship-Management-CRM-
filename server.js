@@ -13,9 +13,9 @@ app.use(express.json({urlencoded : {extended : true}}));
 
 mongoose.set('strictQuery', false);
 mongoose.connect(process.env.mongo);
-const db = mongoose.connection; 
+const db = mongoose.connection;  
 
-db.on('error', (err) => {
+db.on('error', (err) => { 
     console.log(`error while connecting db ${err}`);
 });
  
@@ -56,7 +56,7 @@ const init = async() =>{
 require("./routes/user-route")(app);
 
 
-const start = async(err) => {
+const start = async(err) => {  
     if(err){
         console.log(`error while connecting server ${err}`);
     }

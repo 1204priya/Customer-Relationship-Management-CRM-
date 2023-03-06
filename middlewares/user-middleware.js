@@ -185,7 +185,7 @@ exports.isAdminOrOwner = async (req,res,next)=>{
         //Either the caller should be the admin or the owner of that userId
         
         const callingUser = await User.findOne({email:req.email});
-        if(callingUser.userType == "ADMIN" || callingUser.userId == req.params.id){
+        if(callingUser.userType == "ADMIN" || callingUser.userId == req.params.userId){
             next();
         }
         else{
@@ -201,11 +201,6 @@ exports.isAdminOrOwner = async (req,res,next)=>{
         })
     }
 }
-
-
-
-
-
 
 
 

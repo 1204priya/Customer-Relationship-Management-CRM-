@@ -1,7 +1,7 @@
 const mongoose = require('mongoose')
 
 const ticketSchema = new mongoose.Schema({
-    type:{
+    title:{
         type:String,
         required:true
     },
@@ -28,8 +28,8 @@ const ticketSchema = new mongoose.Schema({
         type:String
     },
 },{
-    timestamps:true,
-    versionKey:false
+    timestamps:true
+    //versionKey:false
 });
 
-module.exports = mongoose.model('tickets',ticketSchema)
+module.exports = mongoose.model('ticket',ticketSchema)
