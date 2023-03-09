@@ -54,7 +54,7 @@ const init = async() =>{
  
 
 require("./routes/user-route")(app);
-
+require("./routes/ticket-route")(app)
 
 const start = async(err) => {  
     if(err){
@@ -68,7 +68,7 @@ start();
 
 
 
-
+  
 
 
 

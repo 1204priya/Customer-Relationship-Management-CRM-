@@ -7,8 +7,8 @@ const ticketSchema = new mongoose.Schema({
     },
     ticketPriority:{
         type:Number,
-        required:true,
-        default:4
+        required:true ,
+        default:  4 
     },
     description:{
         type:String,
@@ -32,4 +32,4 @@ const ticketSchema = new mongoose.Schema({
     //versionKey:false
 });
 
-module.exports = mongoose.model('ticket',ticketSchema)
+module.exports = mongoose.model('Ticket',ticketSchema)
