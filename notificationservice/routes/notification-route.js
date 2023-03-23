@@ -3,8 +3,8 @@ const { createNotificationValidations } = require("../middlewares/notification-v
 
 
 module.exports = (app)=>{
-    app.post("crm/api/v1/notification",[createNotificationValidations],acceptNotificationRequest)
-    app.get("crm/api/v1/notification",getNotifications)
+    app.post("/notiserve/api/v1/notification",[createNotificationValidations],acceptNotificationRequest)
+    app.get("/notiserve/api/v1/notification/:id",getNotifications)
 }
 
 
